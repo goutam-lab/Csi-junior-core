@@ -21,8 +21,8 @@ const instrumentSerif = Instrument_Serif({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "CSI - Bennett University",
+  description: "CSI is Bennett University’s official technical society that empowers students through tech, creativity, and collaboration.",
   generator: "v0.app",
 }
 
