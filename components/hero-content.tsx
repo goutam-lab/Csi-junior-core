@@ -2,8 +2,8 @@
 
 import Image from "next/image"; // Make sure to import Image
 
-// Add custom CSS for mobile animations
-const mobileAnimationStyles = `
+// Add custom CSS for mobile animations only
+const animationStyles = `
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -45,43 +45,43 @@ const mobileAnimationStyles = `
 export default function HeroContent() {
   return (
     <>
-      <style jsx>{mobileAnimationStyles}</style>
-      <main className="absolute inset-0 flex items-center justify-center z-20 p-8">
-        <div className="text-center max-w-2xl">
+      <style jsx>{animationStyles}</style>
+      <main className="absolute inset-0 flex items-center justify-center z-20 p-4 md:p-8">
+        <div className="text-center max-w-2xl md:max-w-3xl w-full">
           {/* LOGO ADDED ABOVE TEXT */}
           <Image
             src="/csi-logo.png"
             alt="CSI Logo"
             width={160}
             height={64}
-            className="h-22 w-auto mx-auto mb-8" // h-16 (64px)
+            className="h-22 md:h-26 w-auto mx-auto mb-6 md:mb-8"
           />
 
           {/* Main Heading */}
-          <h1 className="text-6xl md:text-6xl md:leading-16 tracking-tight font-light text-white mb-6">
+          <h1 className="text-6xl md:text-6xl lg:text-7xl md:leading-tight tracking-tight font-light text-white mb-6 md:mb-8">
             {/* Mobile: CSI and Computer Society of India on separate lines */}
-            <div className="md:hidden space-y-2">
+            <div className="md:hidden space-y-">
               <span className="font-medium italic instrument text-6xl block leading-tight animate-fade-in-up">
                 CSI
               </span>
-              <span className="font-medium italic instrument text-5xl block leading-tight animate-fade-in-up animation-delay-200">
+              <span className="font-medium italic instrument text-5xl block leading-tight animate-fade-in-up animation-delay-200 ">
                 Computer Society of India
               </span>
             </div>
 
             {/* Desktop: Original layout */}
-            <span className="font-medium italic instrument hidden md:inline">
+            <span className=" text-7xl font-medium italic instrument hidden md:inline">
               CSI - Computer Society of India
             </span>
 
             <br className="hidden md:block" />
-            <span className="text-3xl font-light tracking-tight text-white block mt-4 md:mt-0 animate-fade-in-up animation-delay-400 md:animate-none">
+            <span className="text-3xl md:text-4xl font-light tracking-tight text-white block mt-4 md:mt-4 animate-fade-in-up animation-delay-400 md:animate-none">
               Bennett University
             </span>
           </h1>
 
           {/* Description */}
-          <p className="text-base font-light text-white/70 mb-8 leading-relaxed animate-fade-in-up animation-delay-600 md:animate-none">
+          <p className="text-base md:text-lg font-light text-white/70 mb-8 md:mb-10 leading-relaxed max-w-2xl mx-auto animate-fade-in-up animation-delay-600 md:animate-none">
             CSI is Bennett University’s official technical society that empowers
             students through tech, creativity, and collaboration.
           </p>
@@ -112,7 +112,7 @@ export default function HeroContent() {
             {/* This is the main button text */}
             <a
               href="/form" // <-- FIXED: This now links to your form page
-              className="px-6 py-4 rounded-full bg-white text-black font-normal text-sm transition-all duration-300 hover:bg-white/90 cursor-pointer h-12 flex items-center z-10 gap-2"
+              className="px-6 py-6 rounded-full bg-white text-black font-normal text-sm transition-all duration-300 hover:bg-white/90 cursor-pointer h-12 flex items-center z-10 gap-2"
             >
               {/* LOGO ADDED INSIDE BUTTON */}
               <Image
