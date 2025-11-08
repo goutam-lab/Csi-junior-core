@@ -29,7 +29,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 
-// 1. Validation Schema (no change from last time)
+// 1. Validation Schema (UPDATED)
 const phoneRegex = new RegExp(/^(\+91[\-\s]?)?[0]?(91)?[6-9]\d{9}$/);
 const portfolioTeams = ["Tech", "Multimedia", "Design"];
 
@@ -47,6 +47,11 @@ const formSchema = z
     phone: z.string().regex(phoneRegex, {
       message: "Please enter a valid 10-digit Indian phone number.",
     }),
+    // --- NEW FIELD ADDED TO SCHEMA ---
+    scholarType: z.enum(["Hosteler", "Day Scholar"], {
+      required_error: "Please select if you are a hosteler or day scholar.",
+    }),
+    // ---
     team: z.enum(
       [
         "Tech",
@@ -118,6 +123,7 @@ export function JuniorForm() {
       enrollment: "",
       course: "",
       phone: "",
+      scholarType: undefined, // --- ADDED THIS ---
       why: "",
       portfolio: "",
       experience: "",
@@ -272,6 +278,36 @@ export function JuniorForm() {
             )}
           />
         </div>
+
+        {/* --- THIS IS THE NEW FIELD --- */}
+        <FormField
+          control={form.control}
+          name="scholarType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white font-medium">
+                Are you a Hosteler or Day Scholar?
+              </FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full bg-white/10 border-white/20 text-white data-[placeholder]:text-white/50 focus:bg-white/20 focus:ring-offset-violet-500">
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-black/50 backdrop-blur-lg border-white/20 text-white">
+                  <SelectItem value="Hosteler" className="focus:bg-white/20">
+                    Hosteler
+                  </SelectItem>
+                  <SelectItem value="Day Scholar" className="focus:bg-white/20">
+                    Day Scholar
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* --- END OF NEW FIELD --- */}
 
         <FormField
           control={form.control}
