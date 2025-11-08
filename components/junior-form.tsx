@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// 1. Validation Schema (no change from last time)
+// 1. Validation Schema (UPDATED)
 const phoneRegex = new RegExp(/^(\+91[\-\s]?)?[0]?(91)?[6-9]\d{9}$/);
 const portfolioTeams = ["Tech", "Multimedia", "Design"];
 
@@ -48,17 +48,20 @@ const formSchema = z
     phone: z.string().regex(phoneRegex, {
       message: "Please enter a valid 10-digit Indian phone number.",
     }),
-    residency: z.enum(["Hosteller", "Day Scholar"], {
-      required_error: "Please select your residency type.",
-    }),
-    teams: z
-      .array(z.string())
-      .min(1, {
-        message: "Please select at least one team.",
-      })
-      .max(3, {
-        message: "You can select a maximum of 3 teams.",
-      }),
+    team: z.enum(
+      [
+        "Tech",
+        "Multimedia",
+        "Research",
+        "Management",
+        "PR",
+        "Sponsorship",
+        "Design",
+      ],
+      {
+        required_error: "Please select a team.",
+      }
+    ),
     why: z
       .string()
       .min(20, {
@@ -121,8 +124,6 @@ export function JuniorForm() {
       enrollment: "",
       course: "",
       phone: "",
-      residency: undefined,
-      teams: [],
       why: "",
       portfolio: "",
       experience: "",
@@ -286,6 +287,7 @@ export function JuniorForm() {
               </FormItem>
             )}
           />
+        </div>
 
           <FormField
             control={form.control}
