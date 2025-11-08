@@ -30,7 +30,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// 1. Validation Schema (UPDATED)
 const phoneRegex = new RegExp(/^(\+91[\-\s]?)?[0]?(91)?[6-9]\d{9}$/);
 const portfolioTeams = ["Tech", "Multimedia", "Design"];
 
@@ -48,20 +47,17 @@ const formSchema = z
     phone: z.string().regex(phoneRegex, {
       message: "Please enter a valid 10-digit Indian phone number.",
     }),
-    team: z.enum(
-      [
-        "Tech",
-        "Multimedia",
-        "Research",
-        "Management",
-        "PR",
-        "Sponsorship",
-        "Design",
-      ],
-      {
-        required_error: "Please select a team.",
-      }
-    ),
+    residency: z.enum(["Hosteller", "Day Scholar"], {
+      required_error: "Please select your residency type.",
+    }),
+    teams: z
+      .array(z.string())
+      .min(1, {
+        message: "Please select at least one team.",
+      })
+      .max(3, {
+        message: "You can select a maximum of 3 teams.",
+      }),
     why: z
       .string()
       .min(20, {
@@ -75,7 +71,6 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      // Check if any selected team requires portfolio
       const requiresPortfolio = data.teams.some((team) =>
         portfolioTeams.includes(team)
       );
@@ -114,7 +109,6 @@ const teamChoices = [
 export function JuniorForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
-
   const [windowSize, setWindowSize] = React.useState({ width: 0, height: 0 });
 
   const form = useForm<FormValues>({
@@ -124,6 +118,8 @@ export function JuniorForm() {
       enrollment: "",
       course: "",
       phone: "",
+      residency: undefined,
+      teams: [],
       why: "",
       portfolio: "",
       experience: "",
@@ -142,8 +138,6 @@ export function JuniorForm() {
 
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
-
-    // Log the data being submitted (for debugging)
     console.log("Form data being submitted:", values);
 
     try {
@@ -177,7 +171,6 @@ export function JuniorForm() {
     }
   }
 
-  // 3. Handle the success state (with z-index fixes)
   if (isSuccess) {
     return (
       <>
@@ -187,11 +180,9 @@ export function JuniorForm() {
             height={windowSize.height}
             recycle={false}
             numberOfPieces={500}
-            // This zIndex keeps it above the background but below the title/card
             style={{ position: "fixed", top: 0, left: 0, zIndex: 10 }}
           />
         )}
-        {/* This zIndex keeps the card on top of the confetti */}
         <div className="relative z-20 bg-black/50 backdrop-blur-lg border border-white/20 rounded-lg p-8 text-center shadow-2xl">
           <h2 className="text-3xl font-bold text-white mb-4">Thank You!</h2>
           <p className="text-lg text-white/80">
@@ -203,12 +194,10 @@ export function JuniorForm() {
     );
   }
 
-  // 4. The Form JSX (with new glassy styles)
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        // --- UPDATED STYLES FOR GLASS EFFECT ---
         className="space-y-6 bg-black/30 backdrop-blur-lg border border-white/20 rounded-lg p-6 md:p-8 shadow-2xl"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -287,7 +276,6 @@ export function JuniorForm() {
               </FormItem>
             )}
           />
-        </div>
 
           <FormField
             control={form.control}
@@ -357,13 +345,13 @@ export function JuniorForm() {
                                   ? field.onChange([...field.value, team])
                                   : field.onChange(
                                       field.value?.filter(
-                                        (value) => value !== team
+                                        (value: string) => value !== team
                                       )
                                     );
                               }}
                               disabled={
                                 !field.value?.includes(team) &&
-                                field.value?.length >= 3
+                                (field.value?.length ?? 0) >= 3
                               }
                               className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:text-black"
                             />
