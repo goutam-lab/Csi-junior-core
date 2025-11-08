@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // 1. Validation Schema (no change from last time)
 const phoneRegex = new RegExp(/^(\+91[\-\s]?)?[0]?(91)?[6-9]\d{9}$/);
@@ -47,20 +48,17 @@ const formSchema = z
     phone: z.string().regex(phoneRegex, {
       message: "Please enter a valid 10-digit Indian phone number.",
     }),
-    team: z.enum(
-      [
-        "Tech",
-        "Multimedia",
-        "Research",
-        "Management",
-        "PR",
-        "Sponsorship",
-        "Design",
-      ],
-      {
-        required_error: "Please select a team.",
-      }
-    ),
+    residency: z.enum(["Hosteller", "Day Scholar"], {
+      required_error: "Please select your residency type.",
+    }),
+    teams: z
+      .array(z.string())
+      .min(1, {
+        message: "Please select at least one team.",
+      })
+      .max(3, {
+        message: "You can select a maximum of 3 teams.",
+      }),
     why: z
       .string()
       .min(20, {
@@ -74,7 +72,11 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      if (portfolioTeams.includes(data.team)) {
+      // Check if any selected team requires portfolio
+      const requiresPortfolio = data.teams.some((team) =>
+        portfolioTeams.includes(team)
+      );
+      if (requiresPortfolio) {
         if (!data.portfolio || data.portfolio.trim() === "") {
           return false;
         }
@@ -88,7 +90,8 @@ const formSchema = z
       return true;
     },
     {
-      message: "A valid portfolio URL is required for this team.",
+      message:
+        "A valid portfolio URL is required for Tech, Multimedia, or Design teams.",
       path: ["portfolio"],
     }
   );
@@ -118,14 +121,17 @@ export function JuniorForm() {
       enrollment: "",
       course: "",
       phone: "",
+      residency: undefined,
+      teams: [],
       why: "",
       portfolio: "",
       experience: "",
     },
   });
 
-  const watchedTeam = form.watch("team");
-  const showPortfolio = portfolioTeams.includes(watchedTeam);
+  const watchedTeams = form.watch("teams");
+  const showPortfolio =
+    watchedTeams?.some((team) => portfolioTeams.includes(team)) || false;
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -136,6 +142,9 @@ export function JuniorForm() {
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
 
+    // Log the data being submitted (for debugging)
+    console.log("Form data being submitted:", values);
+
     try {
       const response = await fetch("/api/submit", {
         method: "POST",
@@ -145,17 +154,23 @@ export function JuniorForm() {
         body: JSON.stringify(values),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Error response:", errorData);
         throw new Error(
           errorData.message || "Something went wrong. Please try again."
         );
       }
 
+      const result = await response.json();
+      console.log("Success response:", result);
+
       setIsLoading(false);
       setIsSuccess(true);
     } catch (error: any) {
-      console.error(error);
+      console.error("Submission error:", error);
       setIsLoading(false);
       alert(error.message);
     }
@@ -271,34 +286,95 @@ export function JuniorForm() {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="residency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white font-medium">
+                  Residency Type
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full bg-white/10 border-white/20 text-white data-[placeholder]:text-white/50 focus:bg-white/20 focus:ring-offset-violet-500">
+                      <SelectValue placeholder="Select residency type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-black/50 backdrop-blur-lg border-white/20 text-white">
+                    <SelectItem value="Hosteller" className="focus:bg-white/20">
+                      Hosteller
+                    </SelectItem>
+                    <SelectItem
+                      value="Day Scholar"
+                      className="focus:bg-white/20"
+                    >
+                      Day Scholar
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <FormField
           control={form.control}
-          name="team"
-          render={({ field }) => (
+          name="teams"
+          render={() => (
             <FormItem>
-              <FormLabel className="text-white font-medium">
-                Team Choice
-              </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full bg-white/10 border-white/20 text-white data-[placeholder]:text-white/50 focus:bg-white/20 focus:ring-offset-violet-500">
-                    <SelectValue placeholder="Select the team you want to join" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-black/50 backdrop-blur-lg border-white/20 text-white">
-                  {teamChoices.map((team) => (
-                    <SelectItem
-                      key={team}
-                      value={team}
-                      className="focus:bg-white/20"
-                    >
-                      {team}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mb-4">
+                <FormLabel className="text-white font-medium">
+                  Team Choices (Select 1-3)
+                </FormLabel>
+                <FormDescription className="text-white/60">
+                  You can select up to 3 teams you'd like to join.
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {teamChoices.map((team) => (
+                  <FormField
+                    key={team}
+                    control={form.control}
+                    name="teams"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={team}
+                          className="flex flex-row items-start space-x-3 space-y-0 bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(team)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...field.value, team])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== team
+                                      )
+                                    );
+                              }}
+                              disabled={
+                                !field.value?.includes(team) &&
+                                field.value?.length >= 3
+                              }
+                              className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:text-black"
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal text-white cursor-pointer">
+                            {team}
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
