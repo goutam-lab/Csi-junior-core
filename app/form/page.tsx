@@ -1,8 +1,12 @@
 import ShaderBackground from "@/components/shader-background"
 import { JuniorForm } from "@/components/junior-form"
+import FormClosedMessage from "@/components/form-closed-message" // <-- New Import
 import Image from "next/image"
 
 export default function FormPage() {
+  // 🚨 CHANGE THIS FLAG TO 'false' TO RE-OPEN THE FORM LATER
+  const isFormClosed = true; 
+
   return (
     <ShaderBackground>
       <div className="flex flex-col justify-center items-center min-h-screen pt-20 pb-12 px-4">
@@ -29,9 +33,13 @@ export default function FormPage() {
           </div>
         </div>
 
-        {/* The Form (and its success state) will appear below the title */}
+        {/* The Form (or the closed message) will appear below the title */}
         <div className="w-full max-w-2xl">
-          <JuniorForm />
+          {isFormClosed ? ( // <-- Conditional rendering added here
+            <FormClosedMessage />
+          ) : (
+            <JuniorForm />
+          )}
         </div>
       </div>
     </ShaderBackground>
